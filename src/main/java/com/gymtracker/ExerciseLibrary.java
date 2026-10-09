@@ -6,37 +6,30 @@ import com.gymtracker.model.MuscleGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The list of exercises to pick from: some built in, plus any the user adds.
- */
 public class ExerciseLibrary {
     private final List<Exercise> exercises = new ArrayList<>();
-    private final List<Exercise> custom = new ArrayList<>();
+    private final List<Exercise> custom = new ArrayList<>(); // ones the user added, saved to exercises.csv
 
     public ExerciseLibrary() {
-        addBuiltIn("Bench Press", MuscleGroup.CHEST);
-        addBuiltIn("Incline Dumbbell Press", MuscleGroup.CHEST);
-        addBuiltIn("Chest Fly", MuscleGroup.CHEST);
-        addBuiltIn("Deadlift", MuscleGroup.BACK);
-        addBuiltIn("Barbell Row", MuscleGroup.BACK);
-        addBuiltIn("Lat Pulldown", MuscleGroup.BACK);
-        addBuiltIn("Pull Up", MuscleGroup.BACK);
-        addBuiltIn("Squat", MuscleGroup.LEGS);
-        addBuiltIn("Leg Press", MuscleGroup.LEGS);
-        addBuiltIn("Romanian Deadlift", MuscleGroup.LEGS);
-        addBuiltIn("Lunges", MuscleGroup.LEGS);
-        addBuiltIn("Overhead Press", MuscleGroup.SHOULDERS);
-        addBuiltIn("Lateral Raise", MuscleGroup.SHOULDERS);
-        addBuiltIn("Bicep Curl", MuscleGroup.ARMS);
-        addBuiltIn("Tricep Pushdown", MuscleGroup.ARMS);
-        addBuiltIn("Plank", MuscleGroup.CORE);
+        exercises.add(new Exercise("Bench Press", MuscleGroup.CHEST));
+        exercises.add(new Exercise("Incline Dumbbell Press", MuscleGroup.CHEST));
+        exercises.add(new Exercise("Chest Fly", MuscleGroup.CHEST));
+        exercises.add(new Exercise("Deadlift", MuscleGroup.BACK));
+        exercises.add(new Exercise("Barbell Row", MuscleGroup.BACK));
+        exercises.add(new Exercise("Lat Pulldown", MuscleGroup.BACK));
+        exercises.add(new Exercise("Pull Up", MuscleGroup.BACK));
+        exercises.add(new Exercise("Squat", MuscleGroup.LEGS));
+        exercises.add(new Exercise("Leg Press", MuscleGroup.LEGS));
+        exercises.add(new Exercise("Romanian Deadlift", MuscleGroup.LEGS));
+        exercises.add(new Exercise("Lunges", MuscleGroup.LEGS));
+        exercises.add(new Exercise("Overhead Press", MuscleGroup.SHOULDERS));
+        exercises.add(new Exercise("Lateral Raise", MuscleGroup.SHOULDERS));
+        exercises.add(new Exercise("Bicep Curl", MuscleGroup.ARMS));
+        exercises.add(new Exercise("Tricep Pushdown", MuscleGroup.ARMS));
+        exercises.add(new Exercise("Plank", MuscleGroup.CORE));
     }
 
-    private void addBuiltIn(String name, MuscleGroup group) {
-        exercises.add(new Exercise(name, group));
-    }
-
-    /** Adds a new exercise. Returns false if one with that name already exists. */
+    // Returns false if the name is blank or the exercise already exists.
     public boolean addCustom(String name, MuscleGroup group) {
         if (name.isBlank() || find(name) != null) {
             return false;
@@ -47,18 +40,24 @@ public class ExerciseLibrary {
         return true;
     }
 
-    /** Finds an exercise by name, ignoring upper/lower case. Returns null if not found. */
+    // Case-insensitive, so "bench press" finds "Bench Press". Returns null if not found.
     public Exercise find(String name) {
-        for (Exercise e : exercises) {
-            if (e.getName().equalsIgnoreCase(name.trim())) {
-                return e;
+        for (Exercise exercise : exercises) {
+            if (exercise.getName().equalsIgnoreCase(name.trim())) {
+                return exercise;
             }
         }
         return null;
     }
 
-    public List<Exercise> getAll() {
-        return exercises;
+    public List<Exercise> getByGroup(MuscleGroup group) {
+        List<Exercise> result = new ArrayList<>();
+        for (Exercise exercise : exercises) {
+            if (exercise.getMuscleGroup() == group) {
+                result.add(exercise);
+            }
+        }
+        return result;
     }
 
     public List<Exercise> getCustom() {

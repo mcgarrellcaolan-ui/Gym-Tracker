@@ -1,8 +1,6 @@
 package com.gymtracker.model;
 
-/**
- * One exercise done in a workout, e.g. Bench Press 3 x 8 at 60kg.
- */
+// One exercise done in a workout, e.g. Bench Press 3 x 8 at 60kg.
 public class Lift {
     private final String exercise;
     private final int sets;

@@ -58,7 +58,7 @@ class StatsTest {
                 workout("2026-09-01", new Lift("Bench Press", 1, 1, 75)),
                 workout("2026-09-08", new Lift("Bench Press", 3, 12, 60)));
 
-        assertEquals(84, Stats.bestOneRepMaxes(workouts).get("Bench Press"), 0.01);
+        assertEquals(84, Stats.oneRepMaxes(workouts).get("Bench Press"), 0.01);
     }
 
     @Test

@@ -11,23 +11,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-/**
- * Works out personal records, one-rep maxes and the training streak.
- */
 public class Stats {
 
-    /**
-     * Estimates the most you could lift for one rep using the Epley formula:
-     * 1RM = weight x (1 + reps / 30)
-     */
-    public static double oneRepMax(double weightKg, int reps) {
+    // Epley formula: estimated one-rep max = weight x (1 + reps / 30)
+    public static double oneRepMax(double weight, int reps) {
         if (reps == 1) {
-            return weightKg;
+            return weight;
         }
-        return weightKg * (1 + reps / 30.0);
+        return weight * (1 + reps / 30.0);
     }
 
-    /** Heaviest weight lifted for each exercise. */
+    // Heaviest weight lifted for each exercise.
+    // TreeMap keeps the exercises in alphabetical order.
     public static Map<String, Double> personalRecords(List<Workout> workouts) {
         Map<String, Double> records = new TreeMap<>();
         for (Workout workout : workouts) {
@@ -41,32 +36,30 @@ public class Stats {
         return records;
     }
 
-    /** Best estimated one-rep max for each exercise. */
-    public static Map<String, Double> bestOneRepMaxes(List<Workout> workouts) {
-        Map<String, Double> best = new TreeMap<>();
+    // Best estimated one-rep max for each exercise.
+    public static Map<String, Double> oneRepMaxes(List<Workout> workouts) {
+        Map<String, Double> maxes = new TreeMap<>();
         for (Workout workout : workouts) {
             for (Lift lift : workout.getLifts()) {
                 double estimate = oneRepMax(lift.getWeightKg(), lift.getReps());
-                Double current = best.get(lift.getExercise());
-                if (current == null || estimate > current) {
-                    best.put(lift.getExercise(), estimate);
+                Double best = maxes.get(lift.getExercise());
+                if (best == null || estimate > best) {
+                    maxes.put(lift.getExercise(), estimate);
                 }
             }
         }
-        return best;
+        return maxes;
     }
 
-    /**
-     * Number of weeks in a row (Monday to Sunday) with at least one workout.
-     * The streak isn't broken just because you haven't trained yet this week.
-     */
+    // How many weeks in a row had at least one workout.
+    // If you haven't trained yet this week, the streak counts from last week.
     public static int weekStreak(List<Workout> workouts, LocalDate today) {
         Set<LocalDate> weeksTrained = new HashSet<>();
         for (Workout workout : workouts) {
-            weeksTrained.add(startOfWeek(workout.getDate()));
+            weeksTrained.add(mondayOf(workout.getDate()));
         }
 
-        LocalDate week = startOfWeek(today);
+        LocalDate week = mondayOf(today);
         if (!weeksTrained.contains(week)) {
             week = week.minusWeeks(1);
         }
@@ -79,7 +72,7 @@ public class Stats {
         return streak;
     }
 
-    private static LocalDate startOfWeek(LocalDate date) {
-        return date.minusDays(date.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue());
+    private static LocalDate mondayOf(LocalDate date) {
+        return date.with(DayOfWeek.MONDAY);
     }
 }

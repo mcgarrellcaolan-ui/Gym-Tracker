@@ -4,9 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Everything done at the gym on one day.
- */
+// Everything done at the gym on one day.
 public class Workout {
     private final LocalDate date;
     private final List<Lift> lifts = new ArrayList<>();

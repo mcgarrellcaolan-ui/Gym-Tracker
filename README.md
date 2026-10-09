@@ -31,24 +31,31 @@ goals. Everything is saved to CSV files, so you can also open your data in Excel
 Choose an option: 3
 
 Workouts logged: 18
-Training streak: 6 week(s) in a row
+Streak: 6 week(s) in a row
 
-Exercise                       Best       Est. 1RM
-Bench Press                  72.5kg         91.8kg
-Deadlift                    125.0kg        145.8kg
-Squat                       105.0kg        126.0kg
+Exercise                       Best   Est. 1RM
+Bench Press                  72.5kg     91.8kg
+Deadlift                    125.0kg    145.8kg
+Squat                       105.0kg    126.0kg
 ```
 
 ## How to run
 
-You need Java 21 or newer.
+You need Java 21 or newer. Maven doesn't need to be installed, the `mvnw` script downloads it.
 
+Windows:
 ```
-mvnw package
+.\mvnw.cmd package
+java -jar target\gym-tracker.jar
+```
+
+Mac / Linux:
+```
+./mvnw package
 java -jar target/gym-tracker.jar
 ```
 
-On Windows use `mvnw.cmd package`. To run the tests: `mvnw test`.
+`package` also runs the tests. To run just the tests use `test` instead of `package`.
 
 ## Project structure
 

@@ -14,14 +14,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Saves and loads everything as CSV files, so the data can also be opened in Excel.
- *
- * workouts.csv    date,exercise,sets,reps,weightKg
- * bodyweight.csv  date,weightKg
- * goals.csv       exercise,targetKg
- * exercises.csv   name,muscleGroup   (only the ones the user added)
- */
+// Saves and loads everything as CSV files, so the data can also be opened in Excel.
+//
+// workouts.csv    date,exercise,sets,reps,weightKg
+// bodyweight.csv  date,weightKg
+// goals.csv       exercise,targetKg
+// exercises.csv   name,muscleGroup  (only the ones the user added)
 public class CsvStorage {
     private final Path folder;
 
@@ -89,7 +87,7 @@ public class CsvStorage {
         return tracker;
     }
 
-    /** Reads a CSV file, skipping the header and any blank lines. */
+    // Reads a CSV file, skipping the header and any blank lines.
     private List<String[]> readRows(String fileName) throws IOException {
         List<String[]> rows = new ArrayList<>();
         Path file = folder.resolve(fileName);

@@ -39,23 +39,26 @@ public class Main {
             storage.save(tracker);
         }
 
-        new Main(tracker, storage, new Input(new Scanner(System.in))).run();
+        Main app = new Main(tracker, storage, new Input(new Scanner(System.in)));
+        app.run();
     }
 
     public void run() {
         System.out.println("=== Gym Tracker ===");
-        try {
-            while (true) {
-                System.out.println();
-                System.out.println("1. Log a workout");
-                System.out.println("2. Workout history");
-                System.out.println("3. Stats (PRs, one-rep max, streak)");
-                System.out.println("4. Log body weight");
-                System.out.println("5. Body weight history");
-                System.out.println("6. Goals");
-                System.out.println("7. Exercises");
-                System.out.println("0. Exit");
+        boolean running = true;
 
+        while (running) {
+            System.out.println();
+            System.out.println("1. Log a workout");
+            System.out.println("2. Workout history");
+            System.out.println("3. Stats (PRs, one-rep max, streak)");
+            System.out.println("4. Log body weight");
+            System.out.println("5. Body weight history");
+            System.out.println("6. Goals");
+            System.out.println("7. Exercises");
+            System.out.println("0. Exit");
+
+            try {
                 int choice = input.number("Choose an option: ", 0, 7);
                 switch (choice) {
                     case 1 -> logWorkout();
@@ -65,15 +68,13 @@ public class Main {
                     case 5 -> showBodyWeight();
                     case 6 -> goalsMenu();
                     case 7 -> exercisesMenu();
-                    case 0 -> {
-                        System.out.println("See you next session!");
-                        return;
-                    }
+                    case 0 -> running = false;
                 }
+            } catch (NoSuchElementException e) {
+                running = false; // no more input, e.g. the window was closed
             }
-        } catch (NoSuchElementException e) {
-            // input was closed (e.g. Ctrl+Z), so just exit
         }
+        System.out.println("See you next session!");
     }
 
     private void save() {
@@ -88,54 +89,52 @@ public class Main {
         return String.format("%.1fkg", weight);
     }
 
-    // ---- 1. Log a workout ----
-
     private void logWorkout() {
         LocalDate date = input.date("Date (YYYY-MM-DD, or Enter for today): ");
-        do {
+        boolean adding = true;
+
+        while (adding) {
             Exercise exercise = chooseExercise();
             int sets = input.number("Sets: ", 1, 20);
             int reps = input.number("Reps: ", 1, 100);
-            double weight = input.decimal("Weight (kg, 0 for bodyweight): ");
+            double weight = input.decimal("Weight in kg (0 for bodyweight): ");
 
+            double oldRecord = Stats.personalRecords(tracker.getWorkouts()).getOrDefault(exercise.getName(), 0.0);
             Lift lift = new Lift(exercise.getName(), sets, reps, weight);
             tracker.addLift(date, lift);
             System.out.println("Added " + lift);
 
-            Double record = Stats.personalRecords(tracker.getWorkouts()).get(exercise.getName());
-            if (weight > 0 && record != null && weight == record) {
-                System.out.println("That's your heaviest " + exercise.getName() + " yet!");
+            if (weight > oldRecord) {
+                System.out.println("New personal record for " + exercise.getName() + "!");
             }
-        } while (input.yesNo("Add another exercise?"));
+            adding = input.yesNo("Add another exercise?");
+        }
         save();
     }
 
-    /** Shows the exercises grouped by muscle and lets the user pick one by number. */
+    // Lists the exercises by muscle group with a number next to each one.
     private Exercise chooseExercise() {
-        List<Exercise> numbered = new ArrayList<>();
+        List<Exercise> options = new ArrayList<>();
+
         for (MuscleGroup group : MuscleGroup.values()) {
-            boolean printedHeading = false;
-            for (Exercise exercise : tracker.getExercises().getAll()) {
-                if (exercise.getMuscleGroup() == group) {
-                    if (!printedHeading) {
-                        System.out.println(group + ":");
-                        printedHeading = true;
-                    }
-                    numbered.add(exercise);
-                    System.out.println("  " + numbered.size() + ". " + exercise.getName());
-                }
+            List<Exercise> exercises = tracker.getExercises().getByGroup(group);
+            if (exercises.isEmpty()) {
+                continue;
+            }
+            System.out.println(group + ":");
+            for (Exercise exercise : exercises) {
+                options.add(exercise);
+                System.out.println("  " + options.size() + ". " + exercise.getName());
             }
         }
         System.out.println("  0. Add a new exercise");
 
-        int choice = input.number("Exercise: ", 0, numbered.size());
+        int choice = input.number("Exercise: ", 0, options.size());
         if (choice == 0) {
             return addExercise();
         }
-        return numbered.get(choice - 1);
+        return options.get(choice - 1);
     }
-
-    // ---- 2. History ----
 
     private void showHistory() {
         List<Workout> workouts = tracker.getWorkouts();
@@ -145,50 +144,48 @@ public class Main {
         }
         String filter = input.text("Filter by exercise (or Enter for all): ");
 
-        // newest first, last 10 workouts
+        // go backwards through the list so the newest workouts come first
         int shown = 0;
         for (int i = workouts.size() - 1; i >= 0 && shown < 10; i--) {
             Workout workout = workouts.get(i);
-            List<Lift> lifts = new ArrayList<>();
+            List<Lift> matching = new ArrayList<>();
             for (Lift lift : workout.getLifts()) {
                 if (filter.isEmpty() || lift.getExercise().equalsIgnoreCase(filter)) {
-                    lifts.add(lift);
+                    matching.add(lift);
                 }
             }
-            if (!lifts.isEmpty()) {
-                System.out.println(workout.getDate() + " (" + workout.getDate().getDayOfWeek() + ")");
-                for (Lift lift : lifts) {
-                    System.out.println("  " + lift);
-                }
-                shown++;
+            if (matching.isEmpty()) {
+                continue;
             }
+            System.out.println(workout.getDate() + " (" + workout.getDate().getDayOfWeek() + ")");
+            for (Lift lift : matching) {
+                System.out.println("  " + lift);
+            }
+            shown++;
         }
+
         if (shown == 0) {
             System.out.println("No workouts found for " + filter + ".");
         }
     }
 
-    // ---- 3. Stats ----
-
     private void showStats() {
         List<Workout> workouts = tracker.getWorkouts();
         Map<String, Double> records = Stats.personalRecords(workouts);
-        Map<String, Double> oneRepMaxes = Stats.bestOneRepMaxes(workouts);
+        Map<String, Double> maxes = Stats.oneRepMaxes(workouts);
 
         System.out.println("Workouts logged: " + workouts.size());
-        System.out.println("Training streak: " + Stats.weekStreak(workouts, LocalDate.now()) + " week(s) in a row");
+        System.out.println("Streak: " + Stats.weekStreak(workouts, LocalDate.now()) + " week(s) in a row");
         System.out.println();
-        System.out.printf("%-24s %10s %14s%n", "Exercise", "Best", "Est. 1RM");
+        System.out.printf("%-24s %10s %10s%n", "Exercise", "Best", "Est. 1RM");
         for (String exercise : records.keySet()) {
-            System.out.printf("%-24s %10s %14s%n", exercise, kg(records.get(exercise)), kg(oneRepMaxes.get(exercise)));
+            System.out.printf("%-24s %10s %10s%n", exercise, kg(records.get(exercise)), kg(maxes.get(exercise)));
         }
     }
 
-    // ---- 4 & 5. Body weight ----
-
     private void logBodyWeight() {
         LocalDate date = input.date("Date (YYYY-MM-DD, or Enter for today): ");
-        double weight = input.decimal("Body weight (kg): ");
+        double weight = input.decimal("Body weight in kg: ");
         tracker.addBodyWeight(new BodyWeight(date, weight));
         save();
         System.out.println("Saved.");
@@ -203,11 +200,12 @@ public class Main {
         for (BodyWeight entry : entries) {
             System.out.println(entry.getDate() + "  " + kg(entry.getWeightKg()));
         }
-        double change = entries.get(entries.size() - 1).getWeightKg() - entries.get(0).getWeightKg();
-        System.out.printf("Change since %s: %+.1fkg%n", entries.get(0).getDate(), change);
-    }
 
-    // ---- 6. Goals ----
+        BodyWeight first = entries.get(0);
+        BodyWeight last = entries.get(entries.size() - 1);
+        double change = last.getWeightKg() - first.getWeightKg();
+        System.out.printf("Change since %s: %+.1fkg%n", first.getDate(), change);
+    }
 
     private void goalsMenu() {
         List<Goal> goals = tracker.getGoals();
@@ -220,16 +218,19 @@ public class Main {
             Goal goal = goals.get(i);
             double best = records.getOrDefault(goal.getExercise(), 0.0);
             double percent = goal.progress(best);
-            System.out.printf("%d. %s %s  %s %.0f%% (best %s)%n", i + 1, goal.getExercise(),
+            System.out.printf("%d. %s %s %s %.0f%% (best %s)%n", i + 1, goal.getExercise(),
                     kg(goal.getTargetKg()), progressBar(percent), percent, kg(best));
         }
 
         System.out.println();
-        System.out.println("1. Add a goal   2. Remove a goal   0. Back");
+        System.out.println("1. Add a goal");
+        System.out.println("2. Remove a goal");
+        System.out.println("0. Back");
         int choice = input.number("Choose an option: ", 0, 2);
+
         if (choice == 1) {
             Exercise exercise = chooseExercise();
-            double target = input.decimal("Target weight (kg): ");
+            double target = input.decimal("Target weight in kg: ");
             tracker.addGoal(new Goal(exercise.getName(), target));
             save();
         } else if (choice == 2 && !goals.isEmpty()) {
@@ -239,53 +240,50 @@ public class Main {
         }
     }
 
+    // e.g. 70% -> [#######---]
     private static String progressBar(double percent) {
         int filled = (int) (percent / 10);
         return "[" + "#".repeat(filled) + "-".repeat(10 - filled) + "]";
     }
 
-    // ---- 7. Exercises ----
-
     private void exercisesMenu() {
         for (MuscleGroup group : MuscleGroup.values()) {
             List<String> names = new ArrayList<>();
-            for (Exercise exercise : tracker.getExercises().getAll()) {
-                if (exercise.getMuscleGroup() == group) {
-                    names.add(exercise.getName());
-                }
+            for (Exercise exercise : tracker.getExercises().getByGroup(group)) {
+                names.add(exercise.getName());
             }
             if (!names.isEmpty()) {
                 System.out.println(group + ": " + String.join(", ", names));
             }
         }
+
         if (input.yesNo("Add a new exercise?")) {
             addExercise();
         }
     }
 
     private Exercise addExercise() {
-        while (true) {
-            String name = input.text("Exercise name: ");
-            if (name.isEmpty() || name.contains(",")) {
-                System.out.println("Please enter a name without commas.");
-                continue;
-            }
-            Exercise existing = tracker.getExercises().find(name);
-            if (existing != null) {
-                System.out.println(existing.getName() + " is already in the list.");
-                return existing;
-            }
-
-            MuscleGroup[] groups = MuscleGroup.values();
-            for (int i = 0; i < groups.length; i++) {
-                System.out.println("  " + (i + 1) + ". " + groups[i]);
-            }
-            MuscleGroup group = groups[input.number("Muscle group: ", 1, groups.length) - 1];
-
-            tracker.getExercises().addCustom(name, group);
-            save();
-            System.out.println("Added " + name + ".");
-            return tracker.getExercises().find(name);
+        String name = input.text("Exercise name: ");
+        // commas would break the CSV file
+        while (name.isEmpty() || name.contains(",")) {
+            name = input.text("Please enter a name without commas: ");
         }
+
+        Exercise existing = tracker.getExercises().find(name);
+        if (existing != null) {
+            System.out.println(existing.getName() + " is already in the list.");
+            return existing;
+        }
+
+        MuscleGroup[] groups = MuscleGroup.values();
+        for (int i = 0; i < groups.length; i++) {
+            System.out.println("  " + (i + 1) + ". " + groups[i]);
+        }
+        MuscleGroup group = groups[input.number("Muscle group: ", 1, groups.length) - 1];
+
+        tracker.getExercises().addCustom(name, group);
+        save();
+        System.out.println("Added " + name + ".");
+        return tracker.getExercises().find(name);
     }
 }

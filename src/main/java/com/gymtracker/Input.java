@@ -4,9 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
-/**
- * Reads input from the keyboard and keeps asking until the answer is valid.
- */
+// Reads input from the keyboard and keeps asking until the answer is valid.
 public class Input {
     private final Scanner scanner;
 
@@ -49,7 +47,7 @@ public class Input {
         }
     }
 
-    /** Asks for a date. Pressing Enter means today. */
+    // Asks for a date. Pressing Enter means today.
     public LocalDate date(String prompt) {
         while (true) {
             String answer = text(prompt);

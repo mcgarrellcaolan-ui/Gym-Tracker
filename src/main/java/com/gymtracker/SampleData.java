@@ -7,10 +7,8 @@ import com.gymtracker.model.Lift;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
-/**
- * Made-up workouts so the app has something to show the first time it runs.
- * Six weeks of push / pull / legs, getting a bit stronger each week.
- */
+// Made-up workouts so the app has something to show the first time it runs.
+// Six weeks of push / pull / legs, getting a bit stronger each week.
 public class SampleData {
 
     public static GymTracker create(LocalDate today) {
@@ -25,7 +23,7 @@ public class SampleData {
 
             if (!push.isAfter(today)) {
                 tracker.addLift(push, new Lift("Bench Press", 3, 8, 60 + add));
-                tracker.addLift(push, new Lift("Overhead Press", 3, 8, 35 + add / 2));
+                tracker.addLift(push, new Lift("Overhead Press", 3, 8, 35 + week));
                 tracker.addLift(push, new Lift("Tricep Pushdown", 3, 12, 25));
             }
             if (!pull.isAfter(today)) {

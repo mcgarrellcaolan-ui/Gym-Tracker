@@ -1,8 +1,6 @@
 package com.gymtracker.model;
 
-/**
- * A target weight for an exercise, e.g. Bench Press 100kg.
- */
+// A target weight for an exercise, e.g. Bench Press 100kg.
 public class Goal {
     private final String exercise;
     private final double targetKg;
@@ -20,7 +18,7 @@ public class Goal {
         return targetKg;
     }
 
-    /** Returns progress as a percentage, capped at 100. */
+    // Returns progress as a percentage, capped at 100.
     public double progress(double bestKg) {
         if (targetKg <= 0) {
             return 0;

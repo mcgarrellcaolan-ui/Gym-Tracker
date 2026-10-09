@@ -10,16 +10,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Holds all the user's data: workouts, body weight entries, goals and exercises.
- */
+// Holds all the user's data: workouts, body weight entries, goals and exercises.
 public class GymTracker {
     private final List<Workout> workouts = new ArrayList<>();
     private final List<BodyWeight> bodyWeights = new ArrayList<>();
     private final List<Goal> goals = new ArrayList<>();
     private final ExerciseLibrary exercises = new ExerciseLibrary();
 
-    /** Adds a lift to the workout on that date, creating the workout if needed. */
+    // Adds a lift to the workout on that date, creating the workout if needed.
     public void addLift(LocalDate date, Lift lift) {
         Workout workout = findWorkout(date);
         if (workout == null) {
