@@ -13,7 +13,7 @@ import java.util.TreeMap;
 
 public class Stats {
 
-    // Epley formula: estimated one-rep max = weight x (1 + reps / 30)
+    // Epley formula, estimated one rep max = weight x (1 + reps / 30)
     public static double oneRepMax(double weight, int reps) {
         if (reps == 1) {
             return weight;

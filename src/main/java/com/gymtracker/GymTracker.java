@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-// Holds all the user's data: workouts, body weight entries, goals and exercises.
+// Holds the user's workouts, body weight entries, goals and exercises.
 public class GymTracker {
     private final List<Workout> workouts = new ArrayList<>();
     private final List<BodyWeight> bodyWeights = new ArrayList<>();
